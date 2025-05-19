@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Karaoke Con I Ragazzi</title>
+  
+</head>
+<body>
+  <header>
+    <h2>Karaoke Con I Ragazzi</h2>
+    <div class="menu" onclick="toggleDropdown()">☰</div>
+    <div class="dropdown" id="dropdownMenu">
+      <button onclick="promptLogin()">Editor</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="publicView">
+      <h3>Prenota la tua canzone</h3>
+      <div id="maxReachedMessage" class="message hidden">
+        Il numero massimo di prenotazioni è stato raggiunto. Non è più possibile prenotare brani per questa serata.<br><br>
+        Non sei stato abbastanza veloce? Non preoccuparti! Seguici su <a href="https://www.instagram.com/iragazzi_band?igsh=ZjY0YndqanA2YWRx" target="_blank" rel="noopener noreferrer">Instagram</a> per rimanere aggiornato sulla prossima data e non perderti l'occasione di salire sul palco con noi!
+      </div>
+      <ul id="songList"></ul>
+      <div id="reservationForm">
+        <input type="text" id="nameInput" placeholder="Nome e Cognome" />
+        <p>Canzone selezionata: <span id="selectedSong" class="selected">Nessuna</span></p>
+        <button class="btn" id="reserveBtn" disabled>Prenota</button>
+      </div>
+    </section>
+
+    <section id="adminPanel" class="hidden">
+      <h3>Gestione Scaletta</h3>
+      <input type="text" id="newSongInput" placeholder="Nuova canzone" />
+      <button class="btn" onclick="addSong()">Aggiungi</button>
+      <input type="number" id="maxBookingsInput" placeholder="Max prenotazioni" style="margin-top: 10px;" />
+      <button class="btn" onclick="downloadCSV()">Scarica CSV</button>
+      <button class="btn" onclick="resetReservations()">Reset Prenotazioni</button>
+
+      <div class="admin-reserved">
+        <h4>Brani Prenotati</h4>
+        <ul id="reservations"></ul>
+      </div>
+     
+    </section>
+    
+     <section id="socialInfo" class="nextHidden">
+        <div class="social-link">
+        Non dimenticare di seguirci su <a href="https://www.instagram.com/iragazzi_band?igsh=ZjY0YndqanA2YWRx" target="_blank" rel="noopener noreferrer">Instagram</a>
+      </div>
+      </section>
+  </main>
+</body>
+</html> 
+
+<style>
+
+    body {
+      font-family: sans-serif;
+      background: #8de3dd;
+      margin: 0; padding: 0 0px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #db4d81;
+      color: white;
+      font-weight: bold;
+      padding: 0px 20px;
+      position: relative;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    
+    main {
+      margin: 20px 0; padding: 0 20px;
+    }
+    
+     h3{
+        font-weight: bold;
+       margin: 25px 0; 
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+    }
+    
+    .menu {
+      cursor: pointer;
+      font-size: 24px;
+      user-select: none;
+    }
+    .dropdown {
+      display: none;
+      position: absolute;
+      background-color: white;
+      top: 50px;
+      right: 0px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+      z-index: 100;
+    }
+    .dropdown button {
+      padding: 10px;
+      width: 100px;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+    .dropdown button:hover {
+      background: #eee;
+    }
+    #songList, #reservations {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0;
+    }
+    .card {
+      background: #fff;
+      padding: 12px 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      
+      position: relative;
+    }
+    .card.reserved {
+      background: #d3d3d3;
+      cursor: default;
+    }
+    .btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .btn[disabled] {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    input[type="text"], input[type="number"] {
+      padding: 8px;
+      width: 100%;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    .hidden {
+      display: none;
+    }
+    .selected {
+      font-weight: bold;
+    }
+    .delete-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      font-weight: bold;
+      line-height: 18px;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .message {
+      padding: 20px;
+      background: #ffeeba;
+      color: #856404;
+      border: 1px solid #ffeeba;
+      border-radius: 5px;
+      margin-top: 20px;
+      font-weight: bold;
+      animation: fadeIn 1.5s ease-in-out;
+      text-align: center;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .social-link {
+      margin-top: 20px;
+      font-size: 16px;
+      text-align: center;
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      background: #db4d81;
+      color: white;
+      margin: 0;
+      padding: 5px;
+    }
+    .social-link a {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: bold;
+      
+    }
+    /* Drag & drop styles */
+    .dragging {
+      opacity: 0.5;
+    }
+
+</style>
+
+<script>
+
+     let songs = JSON.parse(localStorage.getItem("songs")) || [
+      { title: "Si, ah - Frah Quintale", reservedBy: null },
+      { title: "50 Special - Lunapop", reservedBy: null },
+      { title: "Valerie - Amy Winehouse", reservedBy: null },
+      { title: "Hai Delle Isole Negli Occhi - Tiziano Felrro", reservedBy: null },
+      { title: "Amore Disperato - Nada", reservedBy: null }
+
+    ];
+    let selected = "";
+    let userRole = null;
+    let maxBookings = parseInt(localStorage.getItem("maxBookings")) || 25;
+
+    const songList = document.getElementById("songList");
+    const selectedSong = document.getElementById("selectedSong");
+    const reserveBtn = document.getElementById("reserveBtn");
+    const nameInput = document.getElementById("nameInput");
+    const adminPanel = document.getElementById("adminPanel");
+    const reservationsList = document.getElementById("reservations");
+    const reservationForm = document.getElementById("reservationForm");
+    const maxReachedMessage = document.getElementById("maxReachedMessage");
+
+    function toggleDropdown() {
+      const menu = document.getElementById("dropdownMenu");
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+
+    function promptLogin() {
+      const pwd = prompt("Inserisci password:");
+      if (pwd === "admin123" || pwd === "editor123") {
+        userRole = pwd === "admin123" ? "admin" : "editor";
+        adminPanel.classList.remove("hidden");
+        renderSongs();
+        updateReservations();
+      }
+    }
+    function renderSongs() {
+      songList.innerHTML = "";
+      const isFull = bookingsCount() >= maxBookings;
+
+      if (isFull && !userRole) {
+        songList.classList.add("hidden");
+        reservationForm.classList.add("hidden");
+        maxReachedMessage.classList.remove("hidden");
+        return;
+      } else {
+        songList.classList.remove("hidden");
+        reservationForm.classList.remove("hidden");
+        maxReachedMessage.classList.add("hidden");
+      }
+       songs.forEach((song, index) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.draggable = userRole;
+        card.ondragstart = e => e.dataTransfer.setData("text/plain", index);
+        card.ondragover = e => e.preventDefault();
+        card.ondrop = e => {
+          const fromIndex = e.dataTransfer.getData("text/plain");
+          const toIndex = index;
+          const moved = songs.splice(fromIndex, 1)[0];
+          songs.splice(toIndex, 0, moved);
+          saveData();
+          renderSongs();
+          updateReservations();
+        };
+         
+         let buttonHTML = "";
+        if (song.reservedBy) {
+          buttonHTML = `<button class='btn' disabled>Prenotato</button>`;
+        } else if (!isFull) {
+          buttonHTML = `<button class='btn' onclick='selectSong(${index})'>Prenota</button>`;
+        }
+
+        card.innerHTML = `
+          <div>
+            <p>${song.title}</p>
+            ${userRole && song.reservedBy ? `<p><small>${song.reservedBy}</small></p>` : ""}
+          </div>
+          ${buttonHTML}
+          ${userRole ? `<button class='delete-btn' onclick='deleteSong(${index})'>×</button>` : ""}
+        `;
+        songList.appendChild(card);
+      });
+    }
+
+    function selectSong(index) {
+      selected = songs[index].title;
+      selectedSong.textContent = selected;
+      reserveBtn.disabled = !nameInput.value;
+    }
+    
+    nameInput.addEventListener("input", () => {
+      reserveBtn.disabled = !(selected && nameInput.value);
+    });
+
+    reserveBtn.onclick = () => {
+      const name = nameInput.value.trim();
+      if (!name || !selected) return;
+      const song = songs.find(s => s.title === selected);
+      if (song && !song.reservedBy && bookingsCount() < maxBookings) {
+        song.reservedBy = name;
+        saveData();
+        renderSongs();
+        updateReservations();
+        selected = "";
+        nameInput.value = "";
+        selectedSong.textContent = "Nessuna";
+        reserveBtn.disabled = true;
+      }
+    };
+
+    function addSong() {
+      const input = document.getElementById("newSongInput");
+      const title = input.value.trim();
+      if (title) {
+        songs.push({ title, reservedBy: null });
+        input.value = "";
+        saveData();
+        renderSongs();
+      }
+    }
+    
+    function deleteSong(index) {
+      if (confirm("Sei sicuro di voler rimuovere questa canzone?")) {
+        songs.splice(index, 1);
+        saveData();
+        renderSongs();
+        updateReservations();
+      }
+    }
+
+    function bookingsCount() {
+      return songs.filter(s => s.reservedBy).length;
+    }
+
+    function updateReservations() {
+      reservationsList.innerHTML = "";
+      songs.filter(s => s.reservedBy).forEach(song => {
+        const li = document.createElement("li");
+        li.textContent = `${song.title} → ${song.reservedBy}`;
+        reservationsList.appendChild(li);
+      });
+    }
+    
+     function downloadCSV() {
+      const rows = [["Canzone", "Prenotato Da"]];
+      songs.forEach(s => {
+        if (s.reservedBy) rows.push([s.title, s.reservedBy]);
+      });
+      let csvContent = rows.map(e => e.join(",")).join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "prenotazioni.csv";
+      a.click();
+    }
+
+    function resetReservations() {
+      if (confirm("Sei sicuro di voler resettare tutte le prenotazioni?")) {
+        songs.forEach(song => song.reservedBy = null);
+        saveData();
+        renderSongs();
+        updateReservations();
+        alert("Prenotazioni resettate!");
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem("songs", JSON.stringify(songs));
+      const limit = document.getElementById("maxBookingsInput").value;
+      if (limit) {
+        maxBookings = parseInt(limit);
+        localStorage.setItem("maxBookings", limit);
+      }
+    }
+
+    renderSongs();
+    updateReservations();
+    
+</script>
